@@ -1,5 +1,5 @@
-CLI:=./bin/client  #二进制生成
-SER:=./bin/server
+CLI:=./bin/clientFile/client  #二进制生成
+SER:=./bin/serverFile/server
 
 all:$(CLI)  $(SER)
 
