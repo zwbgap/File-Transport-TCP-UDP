@@ -4,19 +4,18 @@ struct fileinfo file;
 
 struct sockaddr_in  serv_addr;
 
-void menu(struct ip_port *ip){
+void menu(struct ip_port *ip) {
     printf("************************************************************\n");
-    printf("*           Welcome to server: %s:%d              *\n",ip->ip,ip->port);
+    printf("*           Welcome to server: %s:%d     *\n", ip->ip, ip->port);
     printf("*                                                          *\n");
     printf("*  1.download files in TCP mode: file -get -t              *\n");
     printf("*  2.download files in UDP mode: file -get -u              *\n");
     printf("*  3.upload files in TCP mode: file -put -t                *\n");
     printf("*  4.upload files in UDP mode: file -put -u                *\n");
-    printf("*  5.exit: q quit or exit                                  *\n");
+    printf("*  5.get server file list: ls                              *\n");  // 新增选项
+    printf("*  6.exit: q quit or exit                                  *\n");
     printf("************************************************************\n");
 }
-
-
 void get_server_list(struct ip_port *ip_p){
     printf("searching available servers...\n");
     int sockListen = Socket(AF_INET, SOCK_DGRAM, 0);
@@ -127,7 +126,8 @@ int split(struct command *cmd, char *line){
 
     /** 只获取到了一个参数 **/
     int b_exit = strcmp(cmd->filename,"q")==0 || strcmp(cmd->filename,"quit")==0 || strcmp(cmd->filename,"exit")==0  ;
-    if ( index == 1 && !b_exit ){
+    int b_ls = strcmp(cmd->filename, "ls") == 0 || strcmp(cmd->filename, "list") == 0 || strcmp(cmd->filename, "dir") == 0;
+    if ( index == 1 && !b_exit && !b_ls){
         printf("input error!\n");
         return -1;
     }
@@ -185,6 +185,19 @@ getcmd:
 void exec_cmd(struct command *cmd, struct ip_port *ip){
     if (get_cmd(cmd->filename)==EXIT)
         exit(0);
+    if (get_cmd(cmd->filename) == LS){
+        printf("l3\n");
+        send_cmd(cmd, ip);  // 发送命令到服务器
+        int sock_fd = Client_init(ip, TCP);
+        if (sock_fd < 0) {
+            perror("Client_init");
+            return;
+        }
+        
+        get_file_list(sock_fd);
+        close(sock_fd);
+        return;
+    }
     /** 以下两步用TCP传送 **/
     send_cmd(cmd, ip);    
     send_fileinfo(cmd,ip);
@@ -415,4 +428,35 @@ void udp_serv_init(struct sockaddr_in *server_addr, struct ip_port *ip){
     server_addr->sin_port = htons(UDP_PORT);
 }
 
+void get_file_list(int sock_fd) {
+    // 接收服务器发送的文件列表
+    char file_list[1024];
+    printf("Receiving file list from server...\n");
+    bzero(file_list, sizeof(file_list));
 
+    // 使用循环读取数据，确保接收到完整的数据
+    ssize_t total_bytes_read = 0;
+    while (1) {
+        ssize_t bytes_read = read(sock_fd, file_list + total_bytes_read, sizeof(file_list) - total_bytes_read - 1);
+        if (bytes_read < 0) {
+            perror("read");
+            close(sock_fd);
+            return;
+        } else if (bytes_read == 0) {
+            // 服务器关闭连接，表示数据读取完毕
+            break;
+        } else {
+            total_bytes_read += bytes_read;
+            if (total_bytes_read >= sizeof(file_list) - 1) {
+                // 缓冲区已满，停止读取
+                break;
+            }
+        }
+    }
+
+    // 确保字符串以 null 结尾
+    file_list[total_bytes_read] = '\0';
+
+    // 打印文件列表
+    printf("Server file list:\n%s\n", file_list);
+}

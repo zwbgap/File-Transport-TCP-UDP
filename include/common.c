@@ -226,7 +226,9 @@ int get_cmd(char *str){
     
     if (strcmp(str, "q") == 0 || strcmp(str, "quit") == 0 || strcmp(str, "exit") == 0)
         return EXIT;
-        
+    
+    if(strcmp(str, "ls") == 0 || strcmp(str, "list") == 0 || strcmp(str, "dir") == 0)
+        return LS;
     if (strcmp(str, "get")  == 0)
         return GET;
         

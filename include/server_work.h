@@ -8,7 +8,7 @@ void *broad();
 
 
 /** 接收客户端命令参数 **/
-void recv_cmd(struct command *cmd);
+int recv_cmd(struct command *cmd);
 
 
 /** 接收文件信息，建立并保存在本地,并把断点信息回传给客户端 ***/
@@ -21,6 +21,9 @@ void recv_block(struct command *cmd);
 
 /** 客户端下载请求，发送文件 **/
 void send_file(struct command *cmd);
+
+/** 获取服务器上的文件列表，并发送给客户端。*/
+void send_file_list(int clientfd);
 
 #endif
 

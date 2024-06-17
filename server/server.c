@@ -18,10 +18,16 @@ int main(){
     while(1){
         printf("\nWait for task...\n");
         bzero(&cmd,sizeof(struct command));
-        recv_cmd(&cmd);
+        int sockfd = recv_cmd(&cmd);
         printf("cmd:%s -%s -%s\n",cmd.filename,cmd.cmd,cmd.mode); 
+        
+        if(get_cmd(cmd.filename) == LS){
+            //printf("ls1\n");
+            send_file_list(sockfd);
+            //system("ls");
+            continue;
+        }
         recv_fileinfo(&cmd); 
-
         switch (get_cmd(cmd.cmd)){
 
             case GET:

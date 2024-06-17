@@ -48,15 +48,15 @@ void *broad(){
 
 
 
-void recv_cmd(struct command *cmd){
+int recv_cmd(struct command *cmd){
     int connfd = Accept(listenfd, (struct sockaddr *) &cliaddr, (socklen_t *)&clilen);   
     int cmdlen = sizeof(struct command);
     char buf[cmdlen+1];
     bzero(buf, cmdlen+1);
     Readn(connfd, buf, cmdlen);
     memcpy(cmd, buf, cmdlen);
-    close(connfd);
-    return;
+    //close(connfd);
+    return connfd;
 }
 
 
@@ -297,4 +297,34 @@ over:
     return;
 }
 
+/**
+ * 获取文件列表
+ * @param client_sock_fd 客户端套接字
+ * 该函数获取服务器上的文件列表，并发送给客户端。
+ */
+void send_file_list(int clientfd) {
+     struct dirent *entry;
+    DIR *dp = opendir(".");
 
+    if (dp == NULL) {
+        perror("opendir");
+        return;
+    }
+
+    char file_list[1024] = {0};
+    while ((entry = readdir(dp))) {
+        if (entry->d_type == DT_REG) {
+            strcat(file_list, entry->d_name);
+            strcat(file_list, "\n");
+        }
+    }
+
+    closedir(dp);
+     printf("Server file list:\n%s\n", file_list);
+    // 发送文件列表给客户端
+    printf("Sending file list to client...\n");
+    if (send(clientfd, file_list, strlen(file_list), 0) == -1) {
+        perror("send");
+    }
+    printf("completed!");
+}

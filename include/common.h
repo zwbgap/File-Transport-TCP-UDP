@@ -24,6 +24,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "md5.h"
+#include <dirent.h>
 
 #define M                   (1024*1024)
 #define BUFFER_SIZE         1024            //UDP分包大小
