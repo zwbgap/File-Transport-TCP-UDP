@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 
 #define PORT 8080
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 1000
 
 int main() {
     int sockfd, connfd;
@@ -46,7 +46,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    // 接收数据
+    // //接收数据
     // while ((bytes_received = recv(connfd, buffer, BUFFER_SIZE, 0)) > 0) {
     //     total_bytes_received += bytes_received;
     // }
@@ -56,6 +56,8 @@ int main() {
     // } else {
     //     printf("Received total %zd bytes\n", total_bytes_received);
     // }
+
+
     bytes_received = recv(connfd, buffer, BUFFER_SIZE, 0);
     printf("Received total %zd bytes\n", bytes_received);
 
